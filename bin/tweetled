@@ -1,0 +1,35 @@
+#!/usr/bin/ruby
+
+require 'rubygems'
+
+if ARGV.size > 1
+  accounts = []
+  accounts << {
+    'username' => ARGV[1],
+    'password' => ARGV[2],
+    'master' => ARGV[0]
+  }
+elsif ARGV.size == 1
+  # for configuration files
+
+else
+  puts 'Tweetled says: um... what do you want me to do? just sit around and twiddle my thumbs?'
+  puts 
+  puts 'Usage: tweetled [master_username] [slave_username] [slave_password]'
+  exit
+end
+
+require 'twitter'
+
+loop do
+  accounts.each do |a|
+    u = Twitter::Base.new(a['username'],a['password'])
+    u.direct_messages.each do |m|
+      if m.sender_screen_name == a['master']
+        u.post(m.text)
+        u.destroy_direct_message(m.id)
+      end
+    end
+  end
+  sleep 60*2
+end
